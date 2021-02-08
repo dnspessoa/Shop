@@ -6,11 +6,13 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpsPolicy;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.OpenApi.Models;
+using Shop.Data;
 
 namespace Shop
 {
@@ -32,6 +34,14 @@ namespace Shop
             {
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "Shop", Version = "v1" });
             });
+
+            //add um serviço de contextd
+            // services.AddDbContext<DataContext>(opt => opt.UseInMemoryDatabase("DataBase"));
+            services.AddDbContext<DataContext>(opt => opt.UseSqlServer(Configuration.GetConnectionString("DefaultConnection")));
+
+            //Injeção de dependencia, resolve a dependecia
+            //'addScoped' Garante que so tenha um DataContext por requisição
+            services.AddScoped<DataContext, DataContext>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
