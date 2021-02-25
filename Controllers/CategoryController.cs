@@ -14,11 +14,16 @@ namespace Shop.Controllers
     //https://localhost:5001 // atual
     //https://meuapp.azurewebsites.net/
 
-    [Route("categories")]
+    [Route("v1/categories")]
     public class CategoryController : ControllerBase
     {
         [HttpGet]
         [Route("")]
+        [AllowAnonymous]
+        //Seta o caching apenas para este metodo
+        [ResponseCache(VaryByHeader = "User-Agent", Location = ResponseCacheLocation.Any, Duration = 30)]
+        //Seta que este metodo não vai ter caching
+        //[ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public async Task<ActionResult<List<Category>>> Get(
             [FromServices] DataContext dataContext
         )

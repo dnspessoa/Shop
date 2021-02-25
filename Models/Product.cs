@@ -17,6 +17,7 @@ namespace Shop.Models
 
         [Required(ErrorMessage = "Este campo é obrigatório")]
         [Range(1, int.MaxValue, ErrorMessage = "O preço deve ser maior que zero")]
+        // [Column(TypeName = "decimal(18,4)")] //pode colocar a precisão diretamente aqui o com onmodel
         public decimal Price { get; set; }
 
         [Required(ErrorMessage = "Este campo é obrigatório")]

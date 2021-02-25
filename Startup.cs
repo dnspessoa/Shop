@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpsPolicy;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -28,20 +29,28 @@ namespace Shop
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            //zip o json antes de mandar para a tela
+            services.AddCors();
+            services.AddResponseCompression(opt => {
+                opt.Providers.Add<GzipCompressionProvider>();
+                opt.MimeTypes = ResponseCompressionDefaults
+                    .MimeTypes.Concat(new[] {"application/json"});
+            });
+            
+            //Add por padrão um cabeçario de caching na aplicação
+            services.AddResponseCaching();
 
-            services.AddControllers();
+            //add um serviço de contextd
+            //Injeção de dependencia, resolve a dependecia
+            services.AddDbContext<DataContext>(opt => opt.UseInMemoryDatabase("DataBase"));
+            //services.AddDbContext<DataContext>(opt => opt.UseSqlServer(Configuration.GetConnectionString("DefaultConnection")));
+
             services.AddSwaggerGen(c =>
             {
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "Shop", Version = "v1" });
             });
 
-            //add um serviço de contextd
-            // services.AddDbContext<DataContext>(opt => opt.UseInMemoryDatabase("DataBase"));
-            services.AddDbContext<DataContext>(opt => opt.UseSqlServer(Configuration.GetConnectionString("DefaultConnection")));
-
-            //Injeção de dependencia, resolve a dependecia
-            //'addScoped' Garante que so tenha um DataContext por requisição
-            services.AddScoped<DataContext, DataContext>();
+            services.AddControllers();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -57,6 +66,12 @@ namespace Shop
             app.UseHttpsRedirection();
 
             app.UseRouting();
+
+            //Permite fazer chamadas do localhost para a api em tempo de desenvolvimento
+            app.UseCors(c => c
+                .AllowAnyOrigin()
+                .AllowAnyMethod()
+                .AllowAnyHeader());
 
             app.UseAuthorization();
 
